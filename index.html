@@ -99,7 +99,22 @@ me=LS.get('ldd_me',null);adm=me===ADM.u;S.exams.forEach(e=>e.qs.forEach(q=>q.t=q
 async function reg(n,p,c){n=n.trim();if(n.length<3)return'Tên cần ít nhất 3 ký tự';if(p.length<6)return'Mật khẩu cần ít nhất 6 ký tự';if(p!==c)return'Mật khẩu xác nhận không khớp';const u=LS.get('ldd_users',{}),k=n.toLowerCase();if(u[k]||k===ADM.u)return'Tên này đã có người dùng';u[k]={name:n,h:await hash(k+':'+p)};LS.set('ldd_users',u);me=n;LS.set('ldd_me',n)}
 const hash=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('');
 const pb=async p=>{const K=await crypto.subtle.importKey('raw',new TextEncoder().encode(p),'PBKDF2',false,['deriveBits']);return[...new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(ADM.s),iterations:150000,hash:'SHA-256'},K,256))].map(b=>b.toString(16).padStart(2,'0')).join('')};
-async function login(n,p){const k=n.trim().toLowerCase();if(k===ADM.u){if(await pb(p)!==ADM.h)return'Sai tên hoặc mật khẩu';me=ADM.u;adm=true;LS.set('ldd_me',me);return}const u=LS.get('ldd_users',{});if(!u[k]||u[k].h!==await hash(k+':'+p))return'Sai tên hoặc mật khẩu';me=u[k].name;LS.set('ldd_me',me)}
+async function login(n,p){
+    const k=n.trim().toLowerCase();
+    if(k===ADM.u){
+        if(await pb(p)!==ADM.h) return 'Sai tên hoặc mật khẩu';
+        me=ADM.u;
+        adm=true;
+        LS.set('ldd_me',me);
+        closeModal(); // Ẩn modal đăng nhập khi admin đăng nhập thành công
+        return;
+    }
+    const u=LS.get('ldd_users',{});
+    if(!u[k]||u[k].h!==await hash(k+':'+p)) return 'Sai tên hoặc mật khẩu';
+    me=u[k].name;
+    LS.set('ldd_me',me);
+    closeModal(); // Ẩn modal đăng nhập khi người dùng đăng nhập thành công
+}
 function tt(m){const d=document.createElement('div');d.className='ts';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),4200)}
 const loadJS=u=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
 const SC=1.8;let DR=null;function save(){
