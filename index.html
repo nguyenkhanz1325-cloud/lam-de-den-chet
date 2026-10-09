@@ -106,25 +106,12 @@ async function login(n,p){
         me=ADM.u;
         adm=true;
         LS.set('ldd_me',me);
-    } else {
-        const u=LS.get('ldd_users',{});
-        if(!u[k]||u[k].h!==await hash(k+':'+p)) return 'Sai tên hoặc mật khẩu';
-        me=u[k].name;
-        LS.set('ldd_me',me);
+        return;
     }
-
-    // 1. Cập nhật giao diện người dùng
-    if(typeof renderAuth === 'function') renderAuth();
-    if(typeof render === 'function') render();
-
-    // 2. Ép ẩn tất cả các khung modal/popup đang mở trên màn hình
-    document.querySelectorAll('.modal, #authModal, #loginModal, .popup, .overlay').forEach(el => {
-        el.style.display = 'none';
-        el.classList.remove('active', 'open', 'show');
-    });
-
-    // 3. Nếu có hàm closeModal gốc thì gọi thêm
-    if(typeof closeModal === 'function') closeModal();
+    const u=LS.get('ldd_users',{});
+    if(!u[k]||u[k].h!==await hash(k+':'+p)) return 'Sai tên hoặc mật khẩu';
+    me=u[k].name;
+    LS.set('ldd_me',me);
 }
 function tt(m){const d=document.createElement('div');d.className='ts';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),4200)}
 const loadJS=u=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
@@ -236,7 +223,33 @@ case'sw':M=M==='li'?'rg':'li';break;
 case'cl':M=null;V.pend=null;break;
 case'out':me=null;adm=false;V={};LS.set('ldd_me',null);break;
 case'up':V={c:V.c,s:V.s,up:1};scrollTo(0,0);break;
-case'go':{const n=$('un').value,p=$('pw').value;let er;try{er=M==='rg'?await reg(n,p,$('pc').value):await login(n,p)}catch(x){er='Trình duyệt này không hỗ trợ tạo tài khoản'}if(er){$('er').textContent=er;return}M=null;initAdm();if(V.pend){const p=V.pend;V.pend=null;startEx(p)}break}
+case'go':{
+    const n=$('un').value, p=$('pw').value;
+    let er;
+    try{
+        er = M==='rg' ? await reg(n,p,$('pc').value) : await login(n,p);
+    }catch(x){
+        er = 'Trình duyệt này không hỗ trợ tạo tài khoản';
+    }
+    if(er){
+        $('er').textContent = er;
+        return;
+    }
+    M = null;
+    
+    // Tự động tắt bảng Modal và vẽ lại giao diện
+    if(typeof render === 'function') render();
+    if(typeof closeModal === 'function') closeModal();
+    document.querySelectorAll('.modal, #authModal, #loginModal, [class*="modal"]').forEach(el => el.style.display = 'none');
+    
+    initAdm();
+    if(V.pend){
+        const p = V.pend;
+        V.pend = null;
+        startEx(p);
+    }
+    break;
+}
 case'add':V.add=!V.add;break;
 case'sv':{const ti=$('nt').value.trim();if(!DR||!DR.qs.length){tt('Hãy chọn file PDF đề thi trước (chờ báo “Đã tách…”)');return}if(!ti){tt('Hãy nhập tên đề');return}if(JSON.stringify(S).length+JSON.stringify(DR.qs).length>15e6){tt('Dung lượng vượt giới hạn 16MB — hãy xóa bớt đề cũ');return}const cc=V.up?+$('uc').value:V.c,ss=V.up?+$('us').value:V.s,qs=DR.qs,miss=DR.miss;S.exams.push({id:Date.now().toString(36),c:cc,s:ss,title:ti,mins:+$('nm').value||90,qs});DR=null;V={c:cc,s:ss};save();tt(`Đã thêm ${qs.length} câu`+(miss?` · ${miss} câu thiếu đáp án — bấm “Sửa đáp án” để chọn`:''));break}
 case'key':V={c:V.c,s:V.s,k:id};break;
