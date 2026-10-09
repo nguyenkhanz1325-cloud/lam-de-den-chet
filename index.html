@@ -106,15 +106,25 @@ async function login(n,p){
         me=ADM.u;
         adm=true;
         LS.set('ldd_me',me);
-        closeModal(); // Ẩn modal đăng nhập khi admin đăng nhập thành công
+        const modal = document.querySelector('.modal') || document.getElementById('authModal') || document.getElementById('loginModal');
+        if(modal) modal.style.display = 'none';
+        location.reload(); // Tải lại trang để cập nhật giao diện đã đăng nhập
         return;
     }
     const u=LS.get('ldd_users',{});
     if(!u[k]||u[k].h!==await hash(k+':'+p)) return 'Sai tên hoặc mật khẩu';
     me=u[k].name;
     LS.set('ldd_me',me);
-    closeModal(); // Ẩn modal đăng nhập khi người dùng đăng nhập thành công
+    const modal = document.querySelector('.modal') || document.getElementById('authModal') || document.getElementById('loginModal');
+    if(modal) modal.style.display = 'none';
+    location.reload(); // Tải lại trang để cập nhật giao diện đã đăng nhập
 }
+    const u=LS.get('ldd_users',{});
+    if(!u[k]||u[k].h!==await hash(k+':'+p)) return 'Sai tên hoặc mật khẩu';
+    me=u[k].name;
+    LS.set('ldd_me',me);
+    closeModal(); // Ẩn modal đăng nhập khi người dùng đăng nhập thành công
+}S
 function tt(m){const d=document.createElement('div');d.className='ts';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),4200)}
 const loadJS=u=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
 const SC=1.8;let DR=null;function save(){
