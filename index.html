@@ -106,15 +106,24 @@ async function login(n,p){
         me=ADM.u;
         adm=true;
         LS.set('ldd_me',me);
-        if(typeof renderAuth === 'function') renderAuth();
-        if(typeof closeModal === 'function') closeModal();
-        return;
+    } else {
+        const u=LS.get('ldd_users',{});
+        if(!u[k]||u[k].h!==await hash(k+':'+p)) return 'Sai tên hoặc mật khẩu';
+        me=u[k].name;
+        LS.set('ldd_me',me);
     }
-    const u=LS.get('ldd_users',{});
-    if(!u[k]||u[k].h!==await hash(k+':'+p)) return 'Sai tên hoặc mật khẩu';
-    me=u[k].name;
-    LS.set('ldd_me',me);
+
+    // 1. Cập nhật giao diện người dùng
     if(typeof renderAuth === 'function') renderAuth();
+    if(typeof render === 'function') render();
+
+    // 2. Ép ẩn tất cả các khung modal/popup đang mở trên màn hình
+    document.querySelectorAll('.modal, #authModal, #loginModal, .popup, .overlay').forEach(el => {
+        el.style.display = 'none';
+        el.classList.remove('active', 'open', 'show');
+    });
+
+    // 3. Nếu có hàm closeModal gốc thì gọi thêm
     if(typeof closeModal === 'function') closeModal();
 }
 function tt(m){const d=document.createElement('div');d.className='ts';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),4200)}
